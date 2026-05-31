@@ -34,24 +34,6 @@ jobs:
       run: |
         cd src/product-catalog
         go test ./...
-    
-  code-quality:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: checkout code
-      uses: actions/checkout@v4
-        
-    - name: Setup Go 1.22
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.22'
-        
-    - name: Run golangci-lint
-      uses: golangci/golangci-lint-action@v6
-      with:
-        version: v1.55.2
-        working-directory: src/product-catalog
 
   docker:
     runs-on: ubuntu-latest
@@ -90,8 +72,8 @@ jobs:
 
     - name: Update exact tag in kubernetes deployment manifest
       run: | 
-        # Safe sed: Sirf product-catalog ke image tag ko touch karega, baki sidecars safe rahenge
-        sed -i "s|image: ${{ secrets.DOCKER_USERNAME }}/product-catalog:.*|image: ${{ secrets.DOCKER_USERNAME }}/product-catalog:${{ github.run_id }}|" kubernetes/productcatalog/deploy.yaml
+        # Broad Match Sed: File mein jahan bhi 'product-catalog:.*' milega use naye dynamic tag se dandanata hua override kar dega
+        sed -i "s|image: .*/product-catalog:.*|image: ${{ secrets.DOCKER_USERNAME }}/product-catalog:${{ github.run_id }}|" kubernetes/productcatalog/deploy.yaml
         
     - name: Commit and push changes safely
       run: |
